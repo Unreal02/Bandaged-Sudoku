@@ -1,17 +1,48 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class BoardManager : MonoBehaviour
 {
     [SerializeField] private TMP_Text text;
-    private int[,] _board;
-    private int[,] _answerBoard;
-    private const int BoardSize = 9;
-    private const int BoxSize = 3;
+    private Dictionary<Vector2Int, int> _board;
+    public Dictionary<Vector2Int, int> Board { get { return _board; } }
+    private int[,] _answer;
+    public static readonly int BoardSize = 9;
+    public static readonly int BoxSize = 3;
+    private const int _originX = -4;
+    private const int _originY = -4;
+
+    [SerializeField] private GameObject block11;
+    [SerializeField] private GameObject block12;
+    [SerializeField] private GameObject block21;
+
+    private static BoardManager _instance;
+    public static BoardManager Instance
+    {
+        get
+        {
+            if (!_instance)
+            {
+                _instance = FindObjectOfType<BoardManager>();
+            }
+            if (!_instance)
+            {
+                _instance = new GameObject().AddComponent<BoardManager>();
+            }
+            return _instance;
+        }
+    }
 
     private void Awake()
     {
+        if (_instance)
+        {
+            Destroy(gameObject);
+        }
+        DontDestroyOnLoad(gameObject);
+
         GenerateBoard();
     }
 
@@ -19,28 +50,69 @@ public class BoardManager : MonoBehaviour
     {
         InitBoards();
         InitBlocks();
+    }
+
+    public void InitBoards()
+    {
+        _board = new Dictionary<Vector2Int, int>();
+        _answer = new int[BoardSize, BoardSize];
+        FillNumber(0);
         var str = "";
-        for (var r = 0; r < BoardSize; r++)
+        for (var x = 0; x < BoardSize; x++)
         {
-            for (var c = 0; c < BoardSize; c++)
+            for (var y = 0; y < BoardSize; y++)
             {
-                str = str + _answerBoard[r, c] + " ";
+                str = str + _answer[x, y] + " ";
             }
             str += "\n";
         }
         text.text = str;
     }
 
-    public void InitBoards()
-    {
-        _board = new int[BoardSize, BoardSize];
-        _answerBoard = new int[BoardSize, BoardSize];
-        FillNumber(0);
-    }
-
     public void InitBlocks()
     {
+        var existingBlocks = FindObjectsOfType<Block>();
+        foreach (var existingBlock in existingBlocks)
+        {
+            Destroy(existingBlock.gameObject);
+        }
 
+        var dividedBoard = BoardDivider.DivideBoard();
+        Block block;
+        for (var i = 0; i < BoardSize; i++)
+        {
+            for (var j = 0; j < BoardSize; j++)
+            {
+                switch (dividedBoard[i, j])
+                {
+                    case BlockType.None:
+                        break;
+                    case BlockType.Block11:
+                        block = Instantiate(block11).GetComponent<Block>();
+                        block.Init(new Vector2Int(_originX + i, _originY + j), new int[] { _answer[i, j] }, false);
+                        break;
+                    case BlockType.Block12:
+                        block = Instantiate(block12).GetComponent<Block>();
+                        block.Init(new Vector2Int(_originX + i, _originY + j), new int[] { _answer[i, j], _answer[i, j + 1] }, true);
+                        break;
+                    case BlockType.Block21:
+                        block = Instantiate(block21).GetComponent<Block>();
+                        block.Init(new Vector2Int(_originX + i, _originY + j), new int[] { _answer[i, j], _answer[i + 1, j] }, true);
+                        break;
+                }
+            }
+        }
+    }
+
+    public void AddBlock(Vector2Int pos, int number)
+    {
+        Assert.IsTrue(!_board.ContainsKey(pos));
+        _board[pos] = number;
+    }
+
+    public void RemoveBlock(Vector2Int pos)
+    {
+        _board.Remove(pos);
     }
 
     private bool FillNumber(int pos)
@@ -58,18 +130,12 @@ public class BoardManager : MonoBehaviour
         {
             numbers[i] = i + 1;
         }
-        for (var i = 0; i < BoardSize; i++)
-        {
-            var p1 = Random.Range(0, BoardSize);
-            var p2 = Random.Range(0, BoardSize);
-            (numbers[p1], numbers[p2]) = (numbers[p2], numbers[p1]);
-        }
+        numbers.Shuffle();
 
-        for (var i = 0; i < BoardSize; i++)
+        foreach (var number in numbers)
         {
-            var number = numbers[i];
-            _answerBoard[r, c] = number;
-            if (!IsBoardValid(_answerBoard))
+            _answer[r, c] = number;
+            if (!BoardChecker.IsBoardValid(_answer))
             {
                 continue;
             }
@@ -79,87 +145,7 @@ public class BoardManager : MonoBehaviour
             }
         }
 
-        _answerBoard[r, c] = 0;
+        _answer[r, c] = 0;
         return false;
-    }
-
-    private static bool IsBoardValid(int[,] board)
-    {
-        // check rows
-        for (var r = 0; r < BoardSize; r++)
-        {
-            var numbers = new HashSet<int>();
-            for (var c = 0; c < BoardSize; c++)
-            {
-                if (board[r, c] == 0)
-                {
-                    continue;
-                }
-                if (numbers.Contains(board[r, c]))
-                {
-                    return false;
-                }
-                numbers.Add(board[r, c]);
-            }
-        }
-
-        // check columns
-        for (var c = 0; c < BoardSize; c++)
-        {
-            var numbers = new HashSet<int>();
-            for (var r = 0; r < BoardSize; r++)
-            {
-                if (board[r, c] == 0)
-                {
-                    continue;
-                }
-                if (numbers.Contains(board[r, c]))
-                {
-                    return false;
-                }
-                numbers.Add(board[r, c]);
-            }
-        }
-
-        // check 3x3 boxes
-        for (var rOrigin = 0; rOrigin < BoardSize; rOrigin += BoxSize)
-        {
-            for (var cOrigin = 0; cOrigin < BoardSize; cOrigin += BoxSize)
-            {
-                var numbers = new HashSet<int>();
-                for (var r = rOrigin; r < rOrigin + BoxSize; r++)
-                {
-                    for (var c = cOrigin; c < cOrigin + BoxSize; c++)
-                    {
-                        if (board[r, c] == 0)
-                        {
-                            continue;
-                        }
-                        if (numbers.Contains(board[r, c]))
-                        {
-                            return false;
-                        }
-                        numbers.Add(board[r, c]);
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private static bool IsBoardFull(int[,] board)
-    {
-        for (var r = 0; r < BoardSize; r++)
-        {
-            for (var c = 0; c < BoardSize; c++)
-            {
-                if (board[r, c] == 0)
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }
