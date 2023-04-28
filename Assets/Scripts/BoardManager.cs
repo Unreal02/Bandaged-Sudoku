@@ -79,11 +79,36 @@ public class BoardManager : MonoBehaviour
 
         var dividedBoard = BoardDivider.DivideBoard();
         Block block;
+
+        var blockPositionsDict = new Dictionary<BlockType, List<Vector2Int>>();
+
         for (var i = 0; i < BoardSize; i++)
         {
             for (var j = 0; j < BoardSize; j++)
             {
-                switch (dividedBoard[i, j])
+                var blockType = dividedBoard[i, j];
+                if (!blockPositionsDict.ContainsKey(blockType))
+                {
+                    blockPositionsDict.Add(blockType, new List<Vector2Int>());
+                }
+                if (blockType != BlockType.None)
+                {
+                    blockPositionsDict[blockType].Add(new Vector2Int(i, j));
+                }
+            }
+        }
+
+        var randomBlockPosX = 6;
+        var randomBlockPosY = -6;
+        foreach (var (blockType, blockPositions) in blockPositionsDict)
+        {
+            var arr = blockPositions.ToArray();
+            arr.Shuffle();
+            foreach (var position in arr)
+            {
+                var i = position.x;
+                var j = position.y;
+                switch (blockType)
                 {
                     case BlockType.None:
                         break;
@@ -93,12 +118,22 @@ public class BoardManager : MonoBehaviour
                         break;
                     case BlockType.Block12:
                         block = Instantiate(block12).GetComponent<Block>();
-                        block.Init(new Vector2Int(_originX + i, _originY + j), new int[] { _answer[i, j], _answer[i, j + 1] }, true);
+                        block.Init(new Vector2Int(randomBlockPosX, randomBlockPosY), new int[] { _answer[i, j], _answer[i, j + 1] }, true);
                         break;
                     case BlockType.Block21:
                         block = Instantiate(block21).GetComponent<Block>();
-                        block.Init(new Vector2Int(_originX + i, _originY + j), new int[] { _answer[i, j], _answer[i + 1, j] }, true);
+                        block.Init(new Vector2Int(randomBlockPosX, randomBlockPosY), new int[] { _answer[i, j], _answer[i + 1, j] }, true);
                         break;
+                }
+
+                if (blockType != BlockType.Block11)
+                {
+                    randomBlockPosY += 2;
+                    if (randomBlockPosY >= 6)
+                    {
+                        randomBlockPosX += 2;
+                        randomBlockPosY = -6;
+                    }
                 }
             }
         }
