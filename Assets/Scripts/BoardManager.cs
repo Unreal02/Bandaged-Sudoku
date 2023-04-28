@@ -6,6 +6,7 @@ public class BoardManager : MonoBehaviour
 {
     [SerializeField] private TMP_Text text;
     private int[,] _board;
+    private int[,] _answerBoard;
     private const int BoardSize = 9;
     private const int BoxSize = 3;
 
@@ -16,27 +17,28 @@ public class BoardManager : MonoBehaviour
 
     public void GenerateBoard()
     {
-        GenerateNumbers();
-        GenerateBlocks();
+        InitBoards();
+        InitBlocks();
         var str = "";
-        for (var i = 0; i < BoardSize; i++)
+        for (var r = 0; r < BoardSize; r++)
         {
-            for (int j = 0; j < BoardSize; j++)
+            for (var c = 0; c < BoardSize; c++)
             {
-                str = str + _board[i, j] + " ";
+                str = str + _answerBoard[r, c] + " ";
             }
             str += "\n";
         }
         text.text = str;
     }
 
-    public void GenerateNumbers()
+    public void InitBoards()
     {
         _board = new int[BoardSize, BoardSize];
+        _answerBoard = new int[BoardSize, BoardSize];
         FillNumber(0);
     }
 
-    public void GenerateBlocks()
+    public void InitBlocks()
     {
 
     }
@@ -66,8 +68,8 @@ public class BoardManager : MonoBehaviour
         for (var i = 0; i < BoardSize; i++)
         {
             var number = numbers[i];
-            _board[r, c] = number;
-            if (!ValidateBoard())
+            _answerBoard[r, c] = number;
+            if (!IsBoardValid(_answerBoard))
             {
                 continue;
             }
@@ -77,49 +79,49 @@ public class BoardManager : MonoBehaviour
             }
         }
 
-        _board[r, c] = 0;
+        _answerBoard[r, c] = 0;
         return false;
     }
 
-    private bool ValidateBoard()
+    private static bool IsBoardValid(int[,] board)
     {
-        // 가로줄 검사
+        // check rows
         for (var r = 0; r < BoardSize; r++)
         {
             var numbers = new HashSet<int>();
             for (var c = 0; c < BoardSize; c++)
             {
-                if (_board[r, c] == 0)
+                if (board[r, c] == 0)
                 {
                     continue;
                 }
-                if (numbers.Contains(_board[r, c]))
+                if (numbers.Contains(board[r, c]))
                 {
                     return false;
                 }
-                numbers.Add(_board[r, c]);
+                numbers.Add(board[r, c]);
             }
         }
 
-        // 세로줄 검사
+        // check columns
         for (var c = 0; c < BoardSize; c++)
         {
             var numbers = new HashSet<int>();
             for (var r = 0; r < BoardSize; r++)
             {
-                if (_board[r, c] == 0)
+                if (board[r, c] == 0)
                 {
                     continue;
                 }
-                if (numbers.Contains(_board[r, c]))
+                if (numbers.Contains(board[r, c]))
                 {
                     return false;
                 }
-                numbers.Add(_board[r, c]);
+                numbers.Add(board[r, c]);
             }
         }
 
-        // 3x3 박스 검사
+        // check 3x3 boxes
         for (var rOrigin = 0; rOrigin < BoardSize; rOrigin += BoxSize)
         {
             for (var cOrigin = 0; cOrigin < BoardSize; cOrigin += BoxSize)
@@ -129,20 +131,35 @@ public class BoardManager : MonoBehaviour
                 {
                     for (var c = cOrigin; c < cOrigin + BoxSize; c++)
                     {
-                        if (_board[r, c] == 0)
+                        if (board[r, c] == 0)
                         {
                             continue;
                         }
-                        if (numbers.Contains(_board[r, c]))
+                        if (numbers.Contains(board[r, c]))
                         {
                             return false;
                         }
-                        numbers.Add(_board[r, c]);
+                        numbers.Add(board[r, c]);
                     }
                 }
             }
         }
 
+        return true;
+    }
+
+    private static bool IsBoardFull(int[,] board)
+    {
+        for (var r = 0; r < BoardSize; r++)
+        {
+            for (var c = 0; c < BoardSize; c++)
+            {
+                if (board[r, c] == 0)
+                {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 }
