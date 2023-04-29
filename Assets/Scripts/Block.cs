@@ -7,6 +7,8 @@ public class Block : MonoBehaviour
 {
     [SerializeField] private Vector2Int size;
     private int[,] _numbers;
+    private TMP_Text[,] _texts;
+    private Blocks _blocks;
 
     private Vector2Int _position;
     private Vector3 _clickedPosition;
@@ -19,6 +21,9 @@ public class Block : MonoBehaviour
 
         _position = new Vector2Int();
         _numbers = new int[size.x, size.y];
+        _texts = new TMP_Text[size.x, size.y];
+        _blocks = GetComponentInParent<Blocks>();
+
         if (isMovable)
         {
             transform.AddComponent<PolygonCollider2D>().isTrigger = true;
@@ -31,7 +36,6 @@ public class Block : MonoBehaviour
 
         transform.position = new Vector3(position.x, position.y);
         _position = position;
-        _numbers = new int[size.x, size.y];
 
         for (var x = 0; x < size.x; x++)
         {
@@ -41,6 +45,7 @@ public class Block : MonoBehaviour
                 var number = numbers[i];
                 _numbers[x, y] = number;
                 var text = transform.GetChild(i).GetComponent<TMP_Text>();
+                _texts[x, y] = text;
                 text.text = number.ToString();
                 BoardManager.Instance.AddBlock(_position + new Vector2Int(x, y), number);
             }
@@ -51,6 +56,7 @@ public class Block : MonoBehaviour
     {
         _clickedPosition = transform.position;
         _clickedMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        _blocks.IsDraggingBlock = true;
 
         for (var i = 0; i < size.x; i++)
         {
@@ -68,6 +74,8 @@ public class Block : MonoBehaviour
 
     private void OnMouseUp()
     {
+        _blocks.IsDraggingBlock = false;
+
         var x = Mathf.RoundToInt(transform.position.x);
         var y = Mathf.RoundToInt(transform.position.y);
 
@@ -110,6 +118,17 @@ public class Block : MonoBehaviour
         if (canMove)
         {
             ClearChecker.Instance.ClearCheck();
+        }
+    }
+
+    public void SetNumberColor(int numberOnCursor)
+    {
+        for (var i = 0; i < size.x; i++)
+        {
+            for (var j = 0; j < size.y; j++)
+            {
+                _texts[i, j].color = _numbers[i, j] == numberOnCursor ? Color.blue : Color.black;
+            }
         }
     }
 }

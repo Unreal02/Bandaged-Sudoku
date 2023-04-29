@@ -6,6 +6,8 @@ using UnityEngine.Assertions;
 public class BoardManager : MonoBehaviour
 {
     [SerializeField] private TMP_Text text;
+    [SerializeField] private Blocks blocks;
+
     private Dictionary<Vector2Int, int> _board;
     public Dictionary<Vector2Int, int> Board { get { return _board; } }
     private int[,] _answer;
@@ -120,15 +122,15 @@ public class BoardManager : MonoBehaviour
                     case BlockType.None:
                         break;
                     case BlockType.Block11:
-                        block = Instantiate(block11).GetComponent<Block>();
+                        block = Instantiate(block11, blocks.transform).GetComponent<Block>();
                         block.Init(new Vector2Int(_originX + i, _originY + j), new int[] { _answer[i, j] }, false);
                         break;
                     case BlockType.Block12:
-                        block = Instantiate(block12).GetComponent<Block>();
+                        block = Instantiate(block12, blocks.transform).GetComponent<Block>();
                         block.Init(new Vector2Int(randomBlockPosX, randomBlockPosY), new int[] { _answer[i, j], _answer[i, j + 1] }, true);
                         break;
                     case BlockType.Block21:
-                        block = Instantiate(block21).GetComponent<Block>();
+                        block = Instantiate(block21, blocks.transform).GetComponent<Block>();
                         block.Init(new Vector2Int(randomBlockPosX, randomBlockPosY), new int[] { _answer[i, j], _answer[i + 1, j] }, true);
                         break;
                 }
@@ -144,6 +146,8 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+
+        blocks.Init();
     }
 
     public void AddBlock(Vector2Int pos, int number)
