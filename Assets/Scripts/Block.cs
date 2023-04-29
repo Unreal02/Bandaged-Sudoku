@@ -23,6 +23,11 @@ public class Block : MonoBehaviour
         {
             transform.AddComponent<PolygonCollider2D>().isTrigger = true;
         }
+        else
+        {
+            var sprite = GetComponent<SpriteRenderer>();
+            sprite.color = Color.HSVToRGB(0, 0, 0.75f);
+        }
 
         transform.position = new Vector3(position.x, position.y);
         _position = position;
