@@ -71,24 +71,24 @@ public class Block : MonoBehaviour
         var x = Mathf.RoundToInt(transform.position.x);
         var y = Mathf.RoundToInt(transform.position.y);
 
-        bool isMoveable = true;
+        bool canMove = true;
         for (var i = 0; i < size.x; i++)
         {
             for (var j = 0; j < size.y; j++)
             {
                 if (BoardManager.Instance.Board.ContainsKey(new Vector2Int(x + i, y + j)))
                 {
-                    isMoveable = false;
+                    canMove = false;
                     break;
                 }
             }
-            if (!isMoveable)
+            if (!canMove)
             {
                 break;
             }
         }
 
-        if (isMoveable)
+        if (canMove)
         {
             transform.position = new Vector3(x, y);
             _position.x = x;
@@ -105,6 +105,11 @@ public class Block : MonoBehaviour
             {
                 BoardManager.Instance.AddBlock(_position + new Vector2Int(i, j), _numbers[i, j]);
             }
+        }
+
+        if (canMove)
+        {
+            ClearChecker.Instance.ClearCheck();
         }
     }
 }
