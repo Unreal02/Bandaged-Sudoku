@@ -13,6 +13,7 @@ public class BoardManager : MonoBehaviour
     public static readonly int BoxSize = 3;
     private const int _originX = -4;
     private const int _originY = -4;
+    private MemoCells _memoCells;
 
     [SerializeField] private GameObject block11;
     [SerializeField] private GameObject block12;
@@ -43,6 +44,11 @@ public class BoardManager : MonoBehaviour
         }
         DontDestroyOnLoad(gameObject);
 
+        _memoCells = FindObjectOfType<MemoCells>();
+    }
+
+    private void Start()
+    {
         GenerateBoard();
     }
 
@@ -50,6 +56,7 @@ public class BoardManager : MonoBehaviour
     {
         InitBoards();
         InitBlocks();
+        _memoCells.ResetMemoCells();
     }
 
     public void InitBoards()

@@ -22,6 +22,15 @@ public class MemoCell : MonoBehaviour
         }
     }
 
+    public void Init()
+    {
+        _memoNumbers = new bool[BoardManager.BoardSize];
+        for (var i = 0; i < transform.childCount; i++)
+        {
+            _texts[i].alpha = 0f;
+        }
+    }
+
     private void Update()
     {
         var mousePosition = _camera.ScreenToWorldPoint(Input.mousePosition);
