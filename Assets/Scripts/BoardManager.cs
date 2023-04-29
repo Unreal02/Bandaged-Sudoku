@@ -62,7 +62,7 @@ public class BoardManager : MonoBehaviour
         {
             for (var y = 0; y < BoardSize; y++)
             {
-                str = str + _answer[x, y] + " ";
+                str = str + _answer[y, BoardSize - 1 - x] + " ";
             }
             str += "\n";
         }
