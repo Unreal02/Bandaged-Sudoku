@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
+using UnityEngine;
 
 public enum BlockType
 {
@@ -13,16 +10,47 @@ public enum BlockType
 
 public static class BoardDivider
 {
+    private static int _filledBlockCount = 31;
+
     private static int BoardSize => BoardManager.BoardSize;
     private static BlockType[,] _dividedBoard;
     private static bool[,] _visited;
+
+    public static void SetDifficulty(int filledBlockCount)
+    {
+        _filledBlockCount = filledBlockCount;
+    }
 
     public static BlockType[,] DivideBoard()
     {
         _dividedBoard = new BlockType[BoardSize, BoardSize];
         _visited = new bool[BoardSize, BoardSize];
-        FillBlock(0);
-        return _dividedBoard;
+        while (true)
+        {
+            var positions = new Vector2Int[BoardSize * BoardSize];
+            for (var i = 0; i < BoardSize; i++)
+            {
+                for (var j = 0; j < BoardSize; j++)
+                {
+                    positions[i * BoardSize + j] = new Vector2Int(i, j);
+                    _dividedBoard[i, j] = BlockType.None;
+                    _visited[i, j] = false;
+                }
+            }
+            positions.Shuffle();
+
+            for (var i = 0; i < _filledBlockCount; i++)
+            {
+                var position = positions[i];
+                _dividedBoard[position.x, position.y] = BlockType.Block11;
+                _visited[position.x, position.y] = true;
+            }
+
+            if (FillBlock(0))
+            {
+                return _dividedBoard;
+            }
+        }
     }
 
     private static bool FillBlock(int pos)
@@ -40,10 +68,7 @@ public static class BoardDivider
             return FillBlock(pos + 1);
         }
 
-        var blockTypes = Enum.GetValues(typeof(BlockType))
-            .ConvertTo<List<BlockType>>()
-            .Where(blockType => blockType != BlockType.None)
-            .ToArray();
+        var blockTypes = new BlockType[] { BlockType.Block12, BlockType.Block21 };
         blockTypes.Shuffle();
 
         foreach (var blockType in blockTypes)

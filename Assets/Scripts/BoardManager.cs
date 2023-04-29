@@ -108,7 +108,7 @@ public class BoardManager : MonoBehaviour
         }
 
         var randomBlockPosX = 6;
-        var randomBlockPosY = -6;
+        var randomBlockPosY = -4;
         foreach (var (blockType, blockPositions) in blockPositionsDict)
         {
             var arr = blockPositions.ToArray();
@@ -137,13 +137,19 @@ public class BoardManager : MonoBehaviour
 
                 if (blockType != BlockType.Block11)
                 {
-                    randomBlockPosY += 2;
-                    if (randomBlockPosY >= 6)
+                    randomBlockPosY += blockType == BlockType.Block12 ? 2 : 1;
+                    if (randomBlockPosY >= 4)
                     {
-                        randomBlockPosX += 2;
-                        randomBlockPosY = -6;
+                        randomBlockPosX += blockType == BlockType.Block12 ? 1 : 2;
+                        randomBlockPosY = -4;
                     }
                 }
+            }
+
+            if (blockType != BlockType.Block11)
+            {
+                randomBlockPosX += blockType == BlockType.Block12 ? 1 : 2;
+                randomBlockPosY = -4;
             }
         }
 
