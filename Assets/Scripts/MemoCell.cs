@@ -5,11 +5,13 @@ public class MemoCell : MonoBehaviour
 {
     private bool[] _memoNumbers;
     private TMP_Text[] _texts;
+    private Camera _camera;
 
     private void Awake()
     {
         _memoNumbers = new bool[BoardManager.BoardSize];
         _texts = new TMP_Text[BoardManager.BoardSize];
+        _camera = Camera.main;
         for (var i = 0; i < transform.childCount; i++)
         {
             var child = transform.GetChild(i);
@@ -22,7 +24,7 @@ public class MemoCell : MonoBehaviour
 
     private void Update()
     {
-        var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        var mousePosition = _camera.ScreenToWorldPoint(Input.mousePosition);
         var mouseOffset = transform.position - mousePosition;
         if (mouseOffset.x > -0.5 && mouseOffset.x < 0.5 && mouseOffset.y > -0.5 && mouseOffset.y < 0.5)
         {
