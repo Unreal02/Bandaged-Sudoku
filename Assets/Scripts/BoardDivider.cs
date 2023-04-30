@@ -25,9 +25,9 @@ public static class BoardDivider
     {
         _dividedBoard = new BlockType[BoardSize, BoardSize];
         _visited = new bool[BoardSize, BoardSize];
+        var positions = new Vector2Int[BoardSize * BoardSize];
         while (true)
         {
-            var positions = new Vector2Int[BoardSize * BoardSize];
             for (var i = 0; i < BoardSize; i++)
             {
                 for (var j = 0; j < BoardSize; j++)
@@ -96,10 +96,14 @@ public static class BoardDivider
         switch (blockType)
         {
             case BlockType.Block11:
+                if (_visited[x, y])
+                {
+                    return false;
+                }
                 _visited[x, y] = visited;
                 break;
             case BlockType.Block12:
-                if (y >= BoardSize - 1 || _visited[x, y + 1])
+                if (y >= BoardSize - 1 || _visited[x, y] || _visited[x, y + 1])
                 {
                     return false;
                 }
@@ -107,7 +111,7 @@ public static class BoardDivider
                 _visited[x, y + 1] = visited;
                 break;
             case BlockType.Block21:
-                if (x >= BoardSize - 1 || _visited[x + 1, y])
+                if (x >= BoardSize - 1 || _visited[x, y] || _visited[x + 1, y])
                 {
                     return false;
                 }
